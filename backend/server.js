@@ -5,6 +5,7 @@ const cors = require("cors");
 const authRoutes = require("./Routes/authRoutes");
 const foodRoutes = require("./Routes/foodRoutes");
 const errorHandler = require("./Middlewares/error");
+const connectDB = require("./Config/db");
 
 const app = express();
 
@@ -14,10 +15,7 @@ app.use(express.json({ limit: "10mb" })); //for limit of image handling a little
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ DB Connection Error:", err));
+connectDB();
 
 // Routes Placeholders (Inhe baad mein fill karenge)
 app.use("/api/auth", authRoutes);
