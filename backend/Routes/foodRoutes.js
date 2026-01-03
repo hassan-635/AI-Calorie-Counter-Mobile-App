@@ -1,10 +1,14 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../Middlewares/auth");
+const {
+  analyzeBarcode,
+  analyzeImage,
+  saveFoodEntry,
+} = require("../Controllers/foodController");
 
-router.post("/search-text", (req, res) => {});
-
-router.post("/analyze-text", (req, res) => {});
-
-router.get("/barcode/:barcode", (req, res) => {});
+router.get("/barcode/:code", auth, analyzeBarcode);
+router.post("/analyze-image", auth, analyzeImage);
+router.post("/save", auth, saveFoodEntry);
 
 module.exports = router;

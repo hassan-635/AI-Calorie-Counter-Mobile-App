@@ -37,4 +37,5 @@ const FoodLogSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("FoodLog", FoodLogSchema);
+module.exports =
+  mongoose.models.FoodLog || mongoose.model("FoodLog", FoodLogSchema);
