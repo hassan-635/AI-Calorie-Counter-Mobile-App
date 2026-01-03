@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require("./Routes/authRoutes");
+const foodRoutes = require("./Routes/foodRoutes");
+const errorHandler = require("./Middlewares/error");
 
 const app = express();
 
@@ -16,9 +19,12 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.log("❌ DB Connection Error:", err));
 
-// // Routes Placeholders (Inhe baad mein fill karenge)
-// app.use("/api/auth", require("./routes/authRoutes"));
-// app.use("/api/food", require("./routes/foodRoutes"));
+// Routes Placeholders (Inhe baad mein fill karenge)
+app.use("/api/auth", authRoutes);
+app.use("/api/food", foodRoutes);
+
+// Error Handler
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server on port ${PORT}`));
