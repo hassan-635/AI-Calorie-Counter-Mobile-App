@@ -91,8 +91,10 @@ const Dashboard = ({ navigation }) => {
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.circleInner}>
-              <Text style={styles.remainingValue}>{goal - totalCalories}</Text>
-              <Text style={styles.remainingLabel}>kcal left</Text>
+              <Text style={styles.remainingValue}>
+                {totalCalories.toFixed(2)}
+              </Text>
+              <Text style={styles.remainingLabel}>kcal consumed</Text>
             </View>
           </LinearGradient>
         </View>
