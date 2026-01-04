@@ -6,8 +6,8 @@
 backend/.env
 
 # Build folders
-frontend/.expo/
-frontend/dist/
+CalorieCounterApp/.expo/
+CalorieCounterApp/dist/
 backend/dist/
 
 # Logs
