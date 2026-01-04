@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { AuthContext } from "../context/AuthContext";
 import { FoodContext } from "../context/FoodContext";
 import { normalize } from "../utils/dimensions";
@@ -36,13 +37,44 @@ const Dashboard = ({ navigation }) => {
   const totalCalories = logs.reduce((sum, item) => sum + item.calories, 0);
   const goal = 2000; // Ye user profile se bhi aa sakta hai
 
+  // Nutrient Calculation
+  const calculateNutrients = () => {
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+
+    logs.forEach((item) => {
+      if (item.nutrients) {
+        // Parse the string values like "15g" to numbers
+        totalProtein += parseFloat(item.nutrients.protein) || 0;
+        totalCarbs += parseFloat(item.nutrients.carbs) || 0;
+        totalFat += parseFloat(item.nutrients.fat) || 0;
+      }
+    });
+
+    return {
+      protein: Math.round(totalProtein),
+      carbs: Math.round(totalCarbs),
+      fat: Math.round(totalFat),
+    };
+  };
+
+  const nutrients = calculateNutrients();
+
   return (
     <View style={styles.container}>
       {/* Header with Logout */}
-      <Header title={`Hi, ${user?.name || "User"}`} />
-      <TouchableOpacity style={styles.logoutPos} onPress={logout}>
-        <Text style={{ color: "red" }}>Logout</Text>
-      </TouchableOpacity>
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={styles.header}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+      >
+        <Text style={styles.headerTitle}>Hi, {user?.name || "User"}! 👋</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </LinearGradient>
 
       <ScrollView
         refreshControl={
@@ -52,17 +84,39 @@ const Dashboard = ({ navigation }) => {
       >
         {/* Calories Progress */}
         <View style={styles.progressContainer}>
-          <View style={styles.circle}>
-            <Text style={styles.remainingValue}>{goal - totalCalories}</Text>
-            <Text style={styles.remainingLabel}>kcal left</Text>
-          </View>
+          <LinearGradient
+            colors={["#667eea", "#764ba2"]}
+            style={styles.circle}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.circleInner}>
+              <Text style={styles.remainingValue}>{goal - totalCalories}</Text>
+              <Text style={styles.remainingLabel}>kcal left</Text>
+            </View>
+          </LinearGradient>
         </View>
 
         {/* Nutrient Row (Backend se calculation) */}
         <View style={styles.nutrientRow}>
-          <NutrientCard label="Protein" value="--" unit="g" color="#FF5722" />
-          <NutrientCard label="Carbs" value="--" unit="g" color="#2196F3" />
-          <NutrientCard label="Fat" value="--" unit="g" color="#FFC107" />
+          <NutrientCard
+            label="Protein"
+            value={nutrients.protein}
+            unit="g"
+            color="#FF5722"
+          />
+          <NutrientCard
+            label="Carbs"
+            value={nutrients.carbs}
+            unit="g"
+            color="#2196F3"
+          />
+          <NutrientCard
+            label="Fat"
+            value={nutrients.fat}
+            unit="g"
+            color="#FFC107"
+          />
         </View>
 
         <CustomButton
@@ -79,7 +133,7 @@ const Dashboard = ({ navigation }) => {
                 key={item._id}
                 name={item.foodName}
                 calories={item.calories}
-                time={new Date(item.date).toLocaleTimeString([], {
+                time={new Date(item.createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -97,7 +151,38 @@ const Dashboard = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FDFDFD" },
+  container: { flex: 1, backgroundColor: "#f5f7fa" },
+  header: {
+    paddingTop: normalize(50),
+    paddingBottom: normalize(20),
+    paddingHorizontal: normalize(20),
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomLeftRadius: normalize(30),
+    borderBottomRightRadius: normalize(30),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  headerTitle: {
+    fontSize: normalize(24),
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  logoutBtn: {
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    paddingHorizontal: normalize(15),
+    paddingVertical: normalize(8),
+    borderRadius: normalize(20),
+  },
+  logoutText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: normalize(14),
+  },
   scrollContent: {
     paddingHorizontal: normalize(20),
     paddingBottom: normalize(40),
@@ -107,22 +192,35 @@ const styles = StyleSheet.create({
     marginVertical: normalize(30),
   },
   circle: {
-    width: normalize(180),
-    height: normalize(180),
-    borderRadius: normalize(90),
-    borderWidth: 10,
-    borderColor: "#4CAF50", // Full green later (dynamic progress)
+    width: normalize(200),
+    height: normalize(200),
+    borderRadius: normalize(100),
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#667eea",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  circleInner: {
+    width: normalize(170),
+    height: normalize(170),
+    borderRadius: normalize(85),
     backgroundColor: "#fff",
-    elevation: 5,
+    justifyContent: "center",
+    alignItems: "center",
   },
   remainingValue: {
-    fontSize: normalize(32),
+    fontSize: normalize(40),
     fontWeight: "bold",
-    color: "#333",
+    color: "#667eea",
   },
-  remainingLabel: { fontSize: normalize(14), color: "#888" },
+  remainingLabel: {
+    fontSize: normalize(16),
+    color: "#666",
+    fontWeight: "500",
+  },
   nutrientRow: {
     flexDirection: "row",
     justifyContent: "space-between",

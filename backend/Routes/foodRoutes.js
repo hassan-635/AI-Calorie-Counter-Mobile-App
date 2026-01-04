@@ -4,8 +4,12 @@ const {
   analyzeBarcode,
   analyzeFood,
   saveFoodEntry,
+  getUserLogs, // <-- Added
 } = require("../Controllers/foodController");
 const auth = require("../Middlewares/auth");
+
+// Logs
+router.get("/logs", auth, getUserLogs);
 
 // Barcode
 router.get("/barcode/:code", auth, analyzeBarcode);

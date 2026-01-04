@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }) => {
   // 3. Register Function
   const register = async (name, email, password) => {
     try {
+      console.log("AuthContext: Sending Register Request...");
       const res = await api.post("/auth/register", { name, email, password });
       const newToken = res.data.token;
 

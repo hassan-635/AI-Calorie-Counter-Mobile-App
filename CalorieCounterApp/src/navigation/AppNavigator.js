@@ -9,8 +9,8 @@ import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import Dashboard from "../screens/Dashboard";
 import AddFood from "../screens/AddFood";
-import CameraScreen from "../screens/CameraScreen"; // <-- Naya import
-import BarcodeScreen from "../screens/BarcodeScreen"; // <-- Naya import
+import CameraScreen from "../screens/CameraScreen";
+import BarcodeScreen from "../screens/BarcodeScreen";
 
 const Stack = createStackNavigator();
 

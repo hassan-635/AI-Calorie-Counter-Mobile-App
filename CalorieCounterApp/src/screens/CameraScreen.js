@@ -70,15 +70,14 @@ export default function CameraScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} ref={cameraRef}>
-        <View style={styles.buttonContainer}>
-          {loading ? (
-            <ActivityIndicator size="large" color="#fff" />
-          ) : (
-            <TouchableOpacity style={styles.captureBtn} onPress={takePicture} />
-          )}
-        </View>
-      </CameraView>
+      <CameraView style={styles.camera} ref={cameraRef} />
+      <View style={styles.buttonContainer}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#fff" />
+        ) : (
+          <TouchableOpacity style={styles.captureBtn} onPress={takePicture} />
+        )}
+      </View>
     </View>
   );
 }
@@ -87,8 +86,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
   camera: { flex: 1 },
   buttonContainer: {
-    flex: 1,
-    justifyContent: "flex-end", // Fixed from flex-bottom
+    position: "absolute", // <-- Changed to absolute
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: "flex-end",
     alignItems: "center",
     marginBottom: 50,
   },
