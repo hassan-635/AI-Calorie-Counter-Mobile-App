@@ -8,6 +8,7 @@ backend/.env
 # Build folders
 CalorieCounterApp/.expo/
 CalorieCounterApp/dist/
+CalorieCounterApp/utils/api.js
 backend/dist/
 
 # Logs
