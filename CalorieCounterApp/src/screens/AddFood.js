@@ -88,7 +88,10 @@ const AddFood = ({ navigation }) => {
         <View style={{ width: 40 }} />
       </LinearGradient>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Meal Type Selector */}
         <View style={styles.mealTypeContainer}>
           <Text style={styles.mealTypeTitle}>Select Meal Type</Text>
@@ -126,6 +129,8 @@ const AddFood = ({ navigation }) => {
             placeholder="e.g. 1 plate of rice or 2 eggs"
             value={search}
             onChangeText={setSearch}
+            onSubmitEditing={handleTextSearch}
+            returnKeyType="search"
           />
 
           {loading ? (

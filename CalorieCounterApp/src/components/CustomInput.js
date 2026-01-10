@@ -8,6 +8,7 @@ const CustomInput = ({
   placeholder,
   secureTextEntry = false,
   autoCapitalize = "none",
+  ...props
 }) => (
   <View style={styles.container}>
     <TextInput
@@ -18,6 +19,7 @@ const CustomInput = ({
       placeholderTextColor="#999"
       secureTextEntry={secureTextEntry}
       autoCapitalize={autoCapitalize}
+      {...props}
     />
   </View>
 );

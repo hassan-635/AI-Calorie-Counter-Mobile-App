@@ -32,10 +32,16 @@ export default function RegisterScreen({ navigation }) {
     const res = await register(name, email, password);
     setLoading(false);
 
+    console.log("Register Response:", res);
+
     if (res.success) {
       Alert.alert("Success", "Welcome! Your account has been created! 🎉");
     } else {
-      Alert.alert("Error", res.msg);
+      console.error("Registration Error:", res.msg);
+      Alert.alert(
+        "Error",
+        res.msg || "Signup Failed. Please check your internet connection."
+      );
     }
   };
 
