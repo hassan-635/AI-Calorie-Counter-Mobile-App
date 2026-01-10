@@ -17,10 +17,6 @@ router.get("/barcode/:code", auth, analyzeBarcode);
 // Unified Food Analysis (Image or Text)
 router.post("/analyze-food", auth, analyzeFood);
 
-// Legacy routes redirected (optional, or just remove them)
-router.post("/analyze-image", auth, analyzeFood);
-router.post("/analyze-text", auth, analyzeFood);
-
 // Save Entry
 router.post("/save", auth, saveFoodEntry);
 
