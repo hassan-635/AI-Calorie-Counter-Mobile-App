@@ -16,16 +16,6 @@ export const FoodProvider = ({ children }) => {
     }
   };
 
-  const analyzeFoodText = async (query) => {
-    try {
-      // Hamara backend route jo humne pehle banaya tha
-      const res = await api.post("/food/analyze-food", { query });
-      return { success: true, data: res.data };
-    } catch (err) {
-      return { success: false, msg: "Could not find nutrition info" };
-    }
-  };
-
   const analyzeFoodImage = async (base64) => {
     try {
       const res = await api.post("/food/analyze-food", { imageBase64: base64 });
@@ -60,7 +50,6 @@ export const FoodProvider = ({ children }) => {
         logs,
         setLogs,
         addFood,
-        analyzeFoodText,
         analyzeFoodImage,
         analyzeBarcode,
         fetchTodayLogs,

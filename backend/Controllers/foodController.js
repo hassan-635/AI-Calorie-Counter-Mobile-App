@@ -37,12 +37,6 @@ exports.analyzeFood = async (req, res) => {
   try {
     const { query, imageBase64, portion } = req.body;
 
-    // Text-based
-    if (query && !imageBase64) {
-      const nutrition = estimateNutrition(query, portion);
-      return res.json({ foodName: query, ...nutrition, confidence: 1 });
-    }
-
     // Image-based
     if (imageBase64) {
       try {
@@ -62,9 +56,8 @@ exports.analyzeFood = async (req, res) => {
       }
     }
 
-    // Fallback
-    const nutrition = estimateNutrition(query || "Unknown", portion);
-    res.json({ foodName: query || "Unknown", ...nutrition, confidence: 0 });
+    // Fallback/No Image
+    return res.status(400).json({ message: "Image is required for analysis" });
   } catch (err) {
     console.error("Analyze Food Error:", err.message);
     res.status(500).json({ message: "Analysis Failed" });

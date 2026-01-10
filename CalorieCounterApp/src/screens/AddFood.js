@@ -1,205 +1,179 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
-  Alert,
   TouchableOpacity,
+  Dimensions,
+  Animated,
+  Platform,
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { FoodContext } from "../context/FoodContext";
-import CustomInput from "../components/CustomInput";
-import CustomButton from "../components/CustomButton";
 import { normalize } from "../utils/dimensions";
 
-const AddFood = ({ navigation }) => {
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [mealType, setMealType] = useState("breakfast"); // Default to breakfast
+const { width } = Dimensions.get("window");
 
-  const { analyzeFoodText, addFood } = useContext(FoodContext);
+const AddFood = ({ navigation }) => {
+  const [mealType, setMealType] = useState("breakfast");
+
+  // Animation Values
+  const contentFade = useRef(new Animated.Value(0)).current;
+  const contentSlide = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(contentFade, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(contentSlide, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const mealTypes = [
-    { value: "breakfast", label: "🌅 Breakfast", emoji: "🌅" },
-    { value: "lunch", label: "🍱 Lunch", emoji: "🍱" },
-    { value: "dinner", label: "🌙 Dinner", emoji: "🌙" },
-    { value: "snack", label: "🍿 Snack", emoji: "🍿" },
+    { value: "breakfast", label: "Breakfast", emoji: "🌅" },
+    { value: "lunch", label: "Lunch", emoji: "🍱" },
+    { value: "dinner", label: "Dinner", emoji: "🌙" },
+    { value: "snack", label: "Snack", emoji: "🍿" },
   ];
 
-  const handleTextSearch = async () => {
-    if (!search) {
-      Alert.alert("Required", "Please enter a food description first.");
-      return;
-    }
+  const Card = ({ title, subtitle, icon, colors, onPress }) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
 
-    setLoading(true);
-    const res = await analyzeFoodText(search);
-    setLoading(false);
+    const handlePressIn = () => {
+      Animated.spring(scaleAnim, {
+        toValue: 0.97,
+        useNativeDriver: true,
+        friction: 8,
+      }).start();
+    };
 
-    if (res.success) {
-      Alert.alert(
-        "Food Identified ✅",
-        `${res.data.foodName}\nCalories: ${res.data.calories}\nProtein: ${res.data.nutrients.protein}`,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Log Meal", onPress: () => saveEntry(res.data) },
-        ]
-      );
-    } else {
-      Alert.alert(
-        "Not Found",
-        "We couldn't find nutrition info for this item. Please try again."
-      );
-    }
-  };
+    const handlePressOut = () => {
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 8,
+      }).start();
+    };
 
-  const saveEntry = async (foodData) => {
-    const saveRes = await addFood({
-      foodName: foodData.foodName,
-      calories: foodData.calories,
-      nutrients: foodData.nutrients,
-      mealType: mealType, // Use selected meal type
-    });
-
-    if (saveRes.success) {
-      Alert.alert("Success", "Food has been added to your daily log.");
-      navigation.navigate("Dashboard");
-    }
+    return (
+      <Animated.View
+        style={{ transform: [{ scale: scaleAnim }], marginBottom: 20 }}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          style={styles.cardBtn}
+        >
+          <LinearGradient
+            colors={colors}
+            style={styles.cardGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.iconContainer}>
+              <Text style={styles.cardIcon}>{icon}</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{title}</Text>
+              <Text style={styles.cardSubtitle}>{subtitle}</Text>
+            </View>
+            <View style={styles.arrowContainer}>
+              <Text style={styles.arrow}>→</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
+    );
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <LinearGradient
-        colors={["#667eea", "#764ba2"]}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
+      {/* Header - Fits Dashboard Scheme */}
+      <View style={styles.headerContainer}>
+        <LinearGradient
+          colors={["#6a11cb", "#2575fc"]} // Dashboard Gradient
+          style={styles.header}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
         >
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Food 🍽️</Text>
-        <View style={{ width: 40 }} />
-      </LinearGradient>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+          >
+            <Text style={styles.backText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Add New Meal</Text>
+          <View style={{ width: 40 }} />
+        </LinearGradient>
+      </View>
 
-      <ScrollView
+      <Animated.ScrollView
         contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        style={{
+          opacity: contentFade,
+          transform: [{ translateY: contentSlide }],
+        }}
       >
-        {/* Meal Type Selector */}
-        <View style={styles.mealTypeContainer}>
-          <Text style={styles.mealTypeTitle}>Select Meal Type</Text>
-          <View style={styles.mealTypePills}>
+        {/* Meal Type Chips */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>What are we eating? 🍽️</Text>
+          <View style={styles.chipContainer}>
             {mealTypes.map((meal) => (
               <TouchableOpacity
                 key={meal.value}
                 activeOpacity={0.7}
                 onPress={() => setMealType(meal.value)}
                 style={[
-                  styles.mealPill,
-                  mealType === meal.value && styles.mealPillActive,
+                  styles.chip,
+                  mealType === meal.value && styles.chipActive,
                 ]}
               >
-                <Text style={styles.mealEmoji}>{meal.emoji}</Text>
+                <Text style={styles.chipEmoji}>{meal.emoji}</Text>
                 <Text
                   style={[
-                    styles.mealPillText,
-                    mealType === meal.value && styles.mealPillTextActive,
+                    styles.chipLabel,
+                    mealType === meal.value && styles.chipLabelActive,
                   ]}
                 >
-                  {meal.value.charAt(0).toUpperCase() + meal.value.slice(1)}
+                  {meal.label}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Search Section */}
-        <View style={styles.searchCard}>
-          <Text style={styles.sectionTitle}>Search by Text</Text>
-          <Text style={styles.sectionSubtitle}>Describe what you ate</Text>
+        {/* Action Cards */}
+        <View style={styles.cardsSection}>
+          <Text style={styles.sectionTitle}>Capture It 📸</Text>
 
-          <CustomInput
-            placeholder="e.g. 1 plate of rice or 2 eggs"
-            value={search}
-            onChangeText={setSearch}
-            onSubmitEditing={handleTextSearch}
-            returnKeyType="search"
+          <Card
+            title="Snap a Photo"
+            subtitle="AI Food Recognition"
+            icon="📷"
+            colors={["#6a11cb", "#2575fc"]} // Matches Header
+            onPress={() => navigation.navigate("CameraScreen")}
           />
 
-          {loading ? (
-            <ActivityIndicator
-              size="large"
-              color="#667eea"
-              style={{ marginTop: 20 }}
-            />
-          ) : (
-            <CustomButton
-              title="🔍 Search Nutrition"
-              onPress={handleTextSearch}
-              color="#667eea"
-            />
-          )}
+          <Card
+            title="Scan Barcode"
+            subtitle="Instant Product Lookup"
+            icon="🔍"
+            colors={["#4facfe", "#00f2fe"]} // Cyan Blue Accent
+            onPress={() => navigation.navigate("BarcodeScreen")}
+          />
         </View>
-
-        {/* Divider */}
-        <View style={styles.dividerRow}>
-          <View style={styles.line} />
-          <Text style={styles.orText}>OR CHOOSE METHOD</Text>
-          <View style={styles.line} />
-        </View>
-
-        {/* Option Cards */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate("CameraScreen")}
-        >
-          <LinearGradient
-            colors={["#f093fb", "#f5576c"]}
-            style={styles.optionCard}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.iconCircle}>
-              <Text style={styles.iconText}>📷</Text>
-            </View>
-            <View style={styles.optionTextContainer}>
-              <Text style={styles.optionTitle}>Take Photo</Text>
-              <Text style={styles.optionSubtitle}>
-                AI will analyze your food
-              </Text>
-            </View>
-            <Text style={styles.arrow}>→</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate("BarcodeScreen")}
-        >
-          <LinearGradient
-            colors={["#4facfe", "#00f2fe"]}
-            style={styles.optionCard}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.iconCircle}>
-              <Text style={styles.iconText}>🔍</Text>
-            </View>
-            <View style={styles.optionTextContainer}>
-              <Text style={styles.optionTitle}>Scan Barcode</Text>
-              <Text style={styles.optionSubtitle}>Quick product lookup</Text>
-            </View>
-            <Text style={styles.arrow}>→</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 };
@@ -207,171 +181,149 @@ const AddFood = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f7fa",
+    backgroundColor: "#F8F9FA",
+  },
+  headerContainer: {
+    zIndex: 10,
+    backgroundColor: "transparent",
   },
   header: {
-    paddingTop: normalize(50),
-    paddingBottom: normalize(20),
-    paddingHorizontal: normalize(20),
+    paddingTop: Platform.OS === "ios" ? 60 : 50,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottomLeftRadius: normalize(30),
-    borderBottomRightRadius: normalize(30),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    borderBottomLeftRadius: 35,
+    borderBottomRightRadius: 35,
+    shadowColor: "#2575fc",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
     elevation: 8,
   },
   backBtn: {
+    padding: 5,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 15,
     width: 40,
     height: 40,
     justifyContent: "center",
     alignItems: "center",
   },
   backText: {
-    fontSize: normalize(28),
+    fontSize: 20,
     color: "#fff",
     fontWeight: "bold",
+    marginTop: -2,
   },
   headerTitle: {
-    fontSize: normalize(24),
+    fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
+    letterSpacing: 0.5,
   },
   content: {
-    padding: normalize(20),
-    paddingBottom: normalize(40),
+    padding: 25,
   },
-  mealTypeContainer: {
-    backgroundColor: "#fff",
-    borderRadius: normalize(20),
-    padding: normalize(20),
-    marginBottom: normalize(20),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  mealTypeTitle: {
-    fontSize: normalize(18),
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: normalize(15),
-  },
-  mealTypePills: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: normalize(10),
-  },
-  mealPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-    paddingVertical: normalize(10),
-    paddingHorizontal: normalize(15),
-    borderRadius: normalize(25),
-    borderWidth: 2,
-    borderColor: "#f0f0f0",
-  },
-  mealPillActive: {
-    backgroundColor: "rgba(102, 126, 234, 0.1)",
-    borderColor: "#667eea",
-  },
-  mealEmoji: {
-    fontSize: normalize(18),
-    marginRight: normalize(6),
-  },
-  mealPillText: {
-    fontSize: normalize(14),
-    fontWeight: "600",
-    color: "#666",
-  },
-  mealPillTextActive: {
-    color: "#667eea",
-  },
-  searchCard: {
-    backgroundColor: "#fff",
-    borderRadius: normalize(20),
-    padding: normalize(20),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    marginBottom: normalize(20),
+  section: {
+    marginBottom: 35,
   },
   sectionTitle: {
-    fontSize: normalize(20),
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "700",
     color: "#333",
-    marginBottom: normalize(5),
+    marginBottom: 15,
+    marginLeft: 5,
   },
-  sectionSubtitle: {
-    fontSize: normalize(14),
-    color: "#888",
-    marginBottom: normalize(20),
+  chipContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 10,
   },
-  dividerRow: {
+  chip: {
+    width: (width - 60) / 2,
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: normalize(25),
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "#eee",
+    marginBottom: 5,
   },
-  line: {
+  chipActive: {
+    backgroundColor: "#f0f2ff",
+    borderColor: "#2575fc", // Dashboard Blue
+    borderWidth: 1.5,
+  },
+  chipEmoji: {
+    fontSize: 20,
+    marginRight: 10,
+  },
+  chipLabel: {
+    fontSize: 14,
+    color: "#888",
+    fontWeight: "500",
+  },
+  chipLabelActive: {
+    color: "#2575fc",
+    fontWeight: "bold",
+  },
+  cardsSection: {
     flex: 1,
-    height: 1,
-    backgroundColor: "#ddd",
   },
-  orText: {
-    marginHorizontal: 15,
-    color: "#888",
-    fontWeight: "600",
-    fontSize: normalize(12),
-    letterSpacing: 1,
+  cardBtn: {
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    elevation: 6,
   },
-  optionCard: {
-    borderRadius: normalize(20),
-    padding: normalize(20),
+  cardGradient: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: normalize(15),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 8,
+    padding: 25,
+    borderRadius: 25,
   },
-  iconCircle: {
-    width: normalize(60),
-    height: normalize(60),
-    borderRadius: normalize(30),
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+  iconContainer: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+    backgroundColor: "rgba(255,255,255,0.3)",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: normalize(15),
+    marginRight: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.4)",
   },
-  iconText: {
-    fontSize: normalize(30),
+  cardIcon: {
+    fontSize: 26,
   },
-  optionTextContainer: {
+  cardContent: {
     flex: 1,
   },
-  optionTitle: {
-    fontSize: normalize(18),
-    fontWeight: "bold",
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
     color: "#fff",
-    marginBottom: normalize(4),
+    marginBottom: 3,
   },
-  optionSubtitle: {
-    fontSize: normalize(13),
-    color: "rgba(255, 255, 255, 0.8)",
+  cardSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.9)",
+  },
+  arrowContainer: {
+    width: 30,
+    alignItems: "center",
   },
   arrow: {
-    fontSize: normalize(24),
+    fontSize: 24,
     color: "#fff",
-    fontWeight: "bold",
+    opacity: 0.8,
   },
 });
 
