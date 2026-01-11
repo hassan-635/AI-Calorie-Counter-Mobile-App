@@ -11,6 +11,7 @@ import Dashboard from "../screens/Dashboard";
 import AddFood from "../screens/AddFood";
 import CameraScreen from "../screens/CameraScreen";
 import BarcodeScreen from "../screens/BarcodeScreen";
+import HistoryScreen from "../screens/HistoryScreen";
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,7 @@ export default function AppNavigator() {
             <Stack.Screen name="AddFood" component={AddFood} />
             <Stack.Screen name="CameraScreen" component={CameraScreen} />
             <Stack.Screen name="BarcodeScreen" component={BarcodeScreen} />
+            <Stack.Screen name="HistoryScreen" component={HistoryScreen} />
           </>
         ) : (
           // --- Auth Flow ---

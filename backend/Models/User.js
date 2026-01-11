@@ -15,6 +15,8 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    streak: { type: Number, default: 0 },
+    lastLogDate: { type: Date },
   },
   {
     timestamps: true,

@@ -69,61 +69,61 @@ export default function CameraScreen({ navigation }) {
 
   const saveEntry = async (data) => {
     await addFood(data);
-    navigation.navigate("Dashboard");
+    navigation.navigate("Dashboard", { triggerConfetti: true });
   };
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} ref={cameraRef}>
-        {/* Overlay Grid */}
-        <View style={styles.overlayContainer}>
-          <View style={styles.topMask} />
-          <View style={styles.centerRow}>
-            <View style={styles.sideMask} />
-            <View style={styles.focusFrame}>
-              <View style={[styles.corner, styles.topLeft]} />
-              <View style={[styles.corner, styles.topRight]} />
-              <View style={[styles.corner, styles.bottomLeft]} />
-              <View style={[styles.corner, styles.bottomRight]} />
-            </View>
-            <View style={styles.sideMask} />
+      <CameraView style={styles.camera} ref={cameraRef} />
+
+      {/* Overlay Grid */}
+      <View style={[styles.overlayContainer, StyleSheet.absoluteFill]}>
+        <View style={styles.topMask} />
+        <View style={styles.centerRow}>
+          <View style={styles.sideMask} />
+          <View style={styles.focusFrame}>
+            <View style={[styles.corner, styles.topLeft]} />
+            <View style={[styles.corner, styles.topRight]} />
+            <View style={[styles.corner, styles.bottomLeft]} />
+            <View style={[styles.corner, styles.bottomRight]} />
           </View>
-          <View style={styles.bottomMask} />
+          <View style={styles.sideMask} />
         </View>
+        <View style={styles.bottomMask} />
+      </View>
 
-        {/* Controls */}
-        <View style={styles.controlsContainer}>
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.8)"]}
-            style={styles.controlsGradient}
+      {/* Controls */}
+      <View style={styles.controlsContainer}>
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,0.8)"]}
+          style={styles.controlsGradient}
+        >
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.closeBtn}
           >
+            <Text style={styles.closeText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#fff"
+              style={styles.loadingSpinner}
+            />
+          ) : (
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.closeBtn}
+              style={styles.outerCapture}
+              onPress={takePicture}
+              activeOpacity={0.7}
             >
-              <Text style={styles.closeText}>Cancel</Text>
+              <View style={styles.innerCapture} />
             </TouchableOpacity>
+          )}
 
-            {loading ? (
-              <ActivityIndicator
-                size="large"
-                color="#fff"
-                style={styles.loadingSpinner}
-              />
-            ) : (
-              <TouchableOpacity
-                style={styles.outerCapture}
-                onPress={takePicture}
-                activeOpacity={0.7}
-              >
-                <View style={styles.innerCapture} />
-              </TouchableOpacity>
-            )}
-
-            <View style={{ width: 60 }} />
-          </LinearGradient>
-        </View>
-      </CameraView>
+          <View style={{ width: 60 }} />
+        </LinearGradient>
+      </View>
     </View>
   );
 }

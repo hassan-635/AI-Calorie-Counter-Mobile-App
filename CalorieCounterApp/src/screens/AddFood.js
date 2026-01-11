@@ -162,7 +162,9 @@ const AddFood = ({ navigation }) => {
             subtitle="AI Food Recognition"
             icon="📷"
             colors={["#6a11cb", "#2575fc"]} // Matches Header
-            onPress={() => navigation.navigate("CameraScreen")}
+            onPress={() =>
+              navigation.navigate("CameraScreen", { returnScreen: "Dashboard" })
+            }
           />
 
           <Card
@@ -170,7 +172,9 @@ const AddFood = ({ navigation }) => {
             subtitle="Instant Product Lookup"
             icon="🔍"
             colors={["#4facfe", "#00f2fe"]} // Cyan Blue Accent
-            onPress={() => navigation.navigate("BarcodeScreen")}
+            onPress={() =>
+              navigation.navigate("BarcodeScreen", { triggerConfetti: true })
+            }
           />
         </View>
       </Animated.ScrollView>

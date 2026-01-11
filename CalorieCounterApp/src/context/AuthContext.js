@@ -15,13 +15,24 @@ export const AuthProvider = ({ children }) => {
       const storedToken = await AsyncStorage.getItem("token");
       if (storedToken) {
         setToken(storedToken);
-        // Backend ko default header mein token bhej do
         api.defaults.headers.common["x-auth-token"] = storedToken;
+        await loadUser(); // Fetch user data
       }
       setLoading(false);
     };
     checkToken();
   }, []);
+
+  // 1.5 Load User Function
+  const loadUser = async () => {
+    try {
+      const res = await api.get("/auth/user");
+      setUser(res.data);
+    } catch (err) {
+      console.log("Load User Failed:", err.message);
+      setUser(null);
+    }
+  };
 
   // 2. Login Function
   const login = async (email, password) => {
@@ -71,7 +82,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, login, register, logout, loading }}
+      value={{ token, user, login, register, logout, loading, loadUser }}
     >
       {children}
     </AuthContext.Provider>

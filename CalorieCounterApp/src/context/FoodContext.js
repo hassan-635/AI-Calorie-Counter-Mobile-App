@@ -37,8 +37,13 @@ export const FoodProvider = ({ children }) => {
   // FoodContext.js ke andar ye function add karein
   const fetchTodayLogs = async () => {
     try {
-      const res = await api.get("/food/logs"); // Backend endpoint jo aaj ke logs dega
-      setLogs(res.data);
+      const res = await api.get("/food/logs");
+      // Backend returns all logs, so we filter for "Today" on frontend
+      const today = new Date().toDateString();
+      const todayLogs = res.data.filter(
+        (item) => new Date(item.createdAt).toDateString() === today
+      );
+      setLogs(todayLogs);
     } catch (err) {
       console.log("Fetch Logs Error:", err);
     }

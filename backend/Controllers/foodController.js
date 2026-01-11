@@ -100,6 +100,8 @@ exports.analyzeBarcode = async (req, res) => {
   }
 };
 
+const User = require("../Models/User");
+
 // Save Food Entry
 exports.saveFoodEntry = async (req, res) => {
   try {
@@ -115,8 +117,50 @@ exports.saveFoodEntry = async (req, res) => {
       mealType: mealType || "snack",
     });
 
+    // Gamification Logic (Streak)
+    const user = await User.findById(req.user.id);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let lastLog = user.lastLogDate ? new Date(user.lastLogDate) : null;
+    if (lastLog) lastLog.setHours(0, 0, 0, 0);
+
+    let streakUpdated = false;
+
+    if (!lastLog) {
+      // First ever log
+      user.streak = 1;
+      user.lastLogDate = new Date();
+      streakUpdated = true;
+    } else {
+      const diffTime = Math.abs(today - lastLog);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        // Consecutive day
+        user.streak += 1;
+        user.lastLogDate = new Date();
+        streakUpdated = true;
+      } else if (diffDays > 1) {
+        // Broke streak
+        user.streak = 1;
+        user.lastLogDate = new Date();
+        streakUpdated = true;
+      }
+      // If diffDays === 0 (Same day), do nothing
+    }
+
+    if (streakUpdated) {
+      await user.save();
+    }
+
     await foodEntry.save();
-    res.json({ message: "Data Saved in MongoDB!", foodEntry });
+    res.json({
+      message: "Data Saved!",
+      foodEntry,
+      streak: user.streak,
+      streakUpdated,
+    });
   } catch (error) {
     console.error("DB SAVE ERROR:", error.message);
     res

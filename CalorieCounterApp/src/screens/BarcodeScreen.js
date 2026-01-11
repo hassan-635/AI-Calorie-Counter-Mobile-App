@@ -4,9 +4,9 @@ import {
   StyleSheet,
   Text,
   Alert,
-  Button,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { FoodContext } from "../context/FoodContext";
@@ -48,7 +48,7 @@ export default function BarcodeScreen({ navigation }) {
           text: "Save to Log",
           onPress: () => {
             addFood(res.data);
-            navigation.navigate("Dashboard");
+            navigation.navigate("Dashboard", { triggerConfetti: true });
           },
         },
         { text: "Scan Another", onPress: () => setScanned(false) },
@@ -63,51 +63,53 @@ export default function BarcodeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <CameraView
-        style={StyleSheet.absoluteFillObject}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr", "ean13", "upc_a"],
-        }}
+        style={styles.camera}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-      >
-        <View style={styles.overlay}>
-          {/* Top Info */}
-          <View style={styles.headerArea}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.closeBtn}
-            >
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
-            <Text style={styles.hintText}>Align code in frame</Text>
-            <View style={{ width: 40 }} />
-          </View>
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr", "ean13", "ean8", "upc_e", "upc_a"],
+        }}
+      />
 
-          {/* Scan Frame */}
-          <View style={styles.scanFrame}>
-            <View style={[styles.corner, styles.topLeft]} />
-            <View style={[styles.corner, styles.topRight]} />
-            <View style={[styles.corner, styles.bottomLeft]} />
-            <View style={[styles.corner, styles.bottomRight]} />
-
-            {/* Scan Line Animation (Static for now, but looks cool) */}
-            <View style={styles.scanLine} />
-          </View>
-
-          {/* Results Indicator */}
-          {scanned && (
-            <View style={styles.resultContainer}>
-              <ActivityIndicator color="#fff" />
-              <Text style={styles.processingText}>Searching Database...</Text>
-            </View>
-          )}
+      {/* Overlay */}
+      <View style={styles.overlay}>
+        {/* Top Info */}
+        <View style={styles.headerArea}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.closeBtn}
+          >
+            <Text style={styles.closeText}>Close</Text>
+          </TouchableOpacity>
+          <Text style={styles.hintText}>Align code in frame</Text>
+          <View style={{ width: 40 }} />
         </View>
-      </CameraView>
+
+        {/* Scan Frame */}
+        <View style={styles.scanFrame}>
+          <View style={[styles.corner, styles.topLeft]} />
+          <View style={[styles.corner, styles.topRight]} />
+          <View style={[styles.corner, styles.bottomLeft]} />
+          <View style={[styles.corner, styles.bottomRight]} />
+
+          {/* Scan Line Animation */}
+          <View style={styles.scanLine} />
+        </View>
+
+        {/* Results Indicator */}
+        {scanned && (
+          <View style={styles.resultContainer}>
+            <ActivityIndicator color="#fff" />
+            <Text style={styles.processingText}>Searching Database...</Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
+  camera: { flex: 1 },
   center: {
     flex: 1,
     justifyContent: "center",
@@ -119,7 +121,7 @@ const styles = StyleSheet.create({
   permissionBtnText: { color: "#fff", fontWeight: "bold" },
 
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)", // Dim background
     justifyContent: "center",
     alignItems: "center",

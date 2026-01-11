@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import ConfettiCannon from "react-native-confetti-cannon"; // Import Confetti
 import { AuthContext } from "../context/AuthContext";
 import { FoodContext } from "../context/FoodContext";
 import { normalize } from "../utils/dimensions";
@@ -20,14 +21,29 @@ import CustomButton from "../components/CustomButton";
 
 const { width } = Dimensions.get("window");
 
-const Dashboard = ({ navigation }) => {
-  const { user, logout } = useContext(AuthContext);
+const Dashboard = ({ navigation, route }) => {
+  const { user, logout, loadUser } = useContext(AuthContext); // Added loadUser to refresh streak
   const { logs, fetchTodayLogs } = useContext(FoodContext);
   const [refreshing, setRefreshing] = useState(false);
+  const confettiRef = useRef(null);
 
   // Animations
   const headerSlide = useRef(new Animated.Value(-100)).current;
   const contentFade = useRef(new Animated.Value(0)).current;
+
+  // Gamification: Trigger Confetti if passed param
+  useEffect(() => {
+    if (route.params?.triggerConfetti) {
+      setTimeout(() => {
+        confettiRef.current?.start();
+        loadUser(); // Refresh user to get updated streak
+      }, 500);
+      // Clear param to prevent firing on every focus?
+      // Navigation params persist, but start() is only called on effect or ref.
+      // Setting param to false is safer but requires setParams.
+      navigation.setParams({ triggerConfetti: false });
+    }
+  }, [route.params?.triggerConfetti]);
 
   useEffect(() => {
     fetchTodayLogs();
@@ -50,6 +66,7 @@ const Dashboard = ({ navigation }) => {
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchTodayLogs();
+    await loadUser(); // Refresh streak
     setRefreshing(false);
   };
 
@@ -87,6 +104,15 @@ const Dashboard = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Confetti (Hidden by default, fires on ref) */}
+      <ConfettiCannon
+        count={200}
+        origin={{ x: -10, y: 0 }}
+        autoStart={false}
+        ref={confettiRef}
+        fadeOut={true}
+      />
+
       {/* Header */}
       <Animated.View
         style={[
@@ -100,9 +126,23 @@ const Dashboard = ({ navigation }) => {
               <Text style={styles.greeting}>{getGreeting()}</Text>
               <Text style={styles.userName}>{user?.name || "Friend"}! ✨</Text>
             </View>
-            <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
+
+            {/* Streak Indicator */}
+            <View style={styles.rightHeader}>
+              <View style={styles.streakBadge}>
+                <Text style={styles.streakEmoji}>🔥</Text>
+                <Text style={styles.streakText}>{user?.streak || 0}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.historyBtn}
+                onPress={() => navigation.navigate("HistoryScreen")}
+              >
+                <Text style={styles.historyText}>📜</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Progress Circle (Overlapping) */}
@@ -112,7 +152,9 @@ const Dashboard = ({ navigation }) => {
                 colors={["#fff", "#f0f2f5"]}
                 style={styles.innerCircle}
               >
-                <Text style={styles.caloriesText}>{totalCalories}</Text>
+                <Text style={styles.caloriesText}>
+                  {parseFloat(totalCalories).toFixed(0)}
+                </Text>
                 <Text style={styles.caloriesLabel}>Kcal Today</Text>
               </LinearGradient>
             </View>
@@ -178,6 +220,7 @@ const Dashboard = ({ navigation }) => {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
+                  delay={index * 100}
                 />
               </View>
             ))
@@ -221,11 +264,34 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-  logoutBtn: {
+  rightHeader: {
+    alignItems: "flex-end",
+    gap: 10,
+  },
+  streakBadge: {
+    flexDirection: "row",
     backgroundColor: "rgba(255,255,255,0.2)",
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    alignItems: "center",
+  },
+  streakEmoji: { fontSize: 14, marginRight: 5 },
+  streakText: { color: "#fff", fontWeight: "bold" },
+
+  historyBtn: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+  },
+  historyText: { fontSize: 16 },
+
+  logoutBtn: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 15,
   },
   logoutText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
 
