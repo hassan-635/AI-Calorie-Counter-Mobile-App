@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "uvicorn": "uvicorn food_service:app --host 0.0.0.0 --port 8000 --reload"
+    "uvicorn": "cd PythonService && uvicorn food_service:app --host 0.0.0.0 --port 8000 --reload"
   },
   "keywords": [],
   "author": "",
