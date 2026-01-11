@@ -82,6 +82,7 @@ The core logic of the application.
     - Ensure you have a `.env` file in the `backend` folder with:
       - `MONGO_URI`: Your MongoDB connection string.
       - `JWT_SECRET`: Secret for user authentication.
+      - `YOLO_API_URL`: URL of the Python AI service e.g, http://localhost:8000
       - `PORT`: (Optional, default is 5001)
 
 ---
@@ -150,4 +151,4 @@ _Scan the QR code with your phone or press 'a' for Android Emulator._
 - 📊 **History Logging**: Keep track of your daily intake.
 - 🥗 **Nutrient Breakdown**: Detailed macros (Carbs, Protein, Fat).
 
-Made with ❤️ by [Your Name/Team]
+Made with ❤️ by Hassan Ali Abrar
